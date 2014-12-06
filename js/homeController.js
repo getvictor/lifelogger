@@ -1,6 +1,6 @@
 /**
  * Controller for the home page.
  */
-angular.module('app').controller('HomeController', function() {
+angular.module('app').controller('HomeController', function($scope, DBClientService) {
 
 });

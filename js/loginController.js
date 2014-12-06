@@ -2,7 +2,7 @@
  * Controller for the login page.
  */
 angular.module('app').controller('LoginController', function($scope, $location, $window,
-    OPTS, dbClientService) {
+    OPTS, DBClientService) {
 
   var client = new Dropbox.Client({key: OPTS.DROPBOX_APP_KEY});
   client.authDriver(new Dropbox.AuthDriver.Popup({
@@ -15,9 +15,13 @@ angular.module('app').controller('LoginController', function($scope, $location, 
       console.log(error);
     }
     if (client.isAuthenticated()) {
-      dbClientService.setDropboxClient(client);
-      $location.url('/');
-      $scope.$apply();
+      DBClientService.setDropboxClient(client);
+      $location.path('/');
+      // Update AngularJS if needed.
+      var phase = $scope.$root.$$phase;
+      if (phase != '$apply' && phase != '$digest') {
+        $scope.$apply();
+      }
     }
   };
 

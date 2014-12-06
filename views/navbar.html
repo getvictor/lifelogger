@@ -11,6 +11,9 @@
     </div>
     <div class="navbar-collapse" ng-class="{collapse: isCollapsed}">
       <ul class="nav navbar-nav">
+        <li ng-if="isAuthenticated()" ng-class="urlMatches('/addTracker') ? 'active' : ''">
+          <a href="#/addTracker"><span class="glyphicon glyphicon-plus"></span>&nbsp;Add Tracker</a>
+        </li>
       </ul>
       <form class="navbar-form navbar-right">
         <button ng-if="isAuthenticated()" class="btn btn-default" ng-click="logout()">Logout</button>

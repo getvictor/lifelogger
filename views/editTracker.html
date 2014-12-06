@@ -1,0 +1,16 @@
+<alert ng-repeat="alert in AlertsService.alerts" type="{{alert.type}}" close="AlertsService.clear($index)">{{alert.msg}}</alert>
+
+<h3 ng-show="!edit">Add New Tracker</h3>
+<h3 ng-show="edit">Edit Tracker</h3>
+<form role="form" name="form" novalidate>
+  <div class="row">
+    <div class="form-group col-sm-6" ng-class="{true: 'has-error'}[submitted && form.name.$invalid]">
+      <label for="name">Name</label>
+      <input type="text" class="form-control" id="name" placeholder="Name" maxlength="255" ng-model="name"
+        name="name" required>
+      <p class="help-block" ng-show="submitted && form.name.$error.required">Required</p>
+    </div>
+  </div>
+  <button ng-show="!edit" type="submit" class="btn btn-default" ng-click="addTracker()">Save</button>
+  <button ng-show="edit" type="submit" class="btn btn-default" ng-click="editTracker()">Save</button>
+</form>

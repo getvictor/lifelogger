@@ -1,4 +1,4 @@
-angular.module('app', [ 'ngRoute', 'ui.bootstrap']);
+angular.module('app', [ 'ngRoute', 'ui.bootstrap', 'ui.validate']);
 
 angular.module('app').constant('OPTS', {
   TIMEOUT: 30000,
@@ -21,6 +21,17 @@ angular.module('app').config(function($routeProvider) {
     controller : 'HomeController',
     access : { requiredAuthentication: true },
     title : 'Home'
+  }).
+  // Add tracker.
+  when('/addTracker', {
+    redirectTo : '/editTracker'
+  }).
+  // Edit tracker
+  when('/editTracker', {
+    templateUrl : 'views/editTracker.html',
+    controller : 'EditTrackerController',
+    access : { requiredAuthentication: true },
+    title : 'Edit Tracker'
   }).
   // Go to home page.
   otherwise({
@@ -51,49 +62,7 @@ angular.module('app').run(function($rootScope, $location, $window, Authenticatio
   });
 });
 
-angular.module('app').service('dbClientService', function() {
-
-  var client;
-
-  this.setDropboxClient = function(dropboxClient) {
-    client = dropboxClient;
-  };
-
-  this.isAuthenticated = function() {
-    if (!client) return false;
-    return client.isAuthenticated();
-  }
-
-  this.signOut = function(callback) {
-    if (client) {
-      client.signOut({mustInvalidate: true}, function(error) {
-        if (error) {
-          alert('SignOut Failure!');
-        } else {
-          console.log('SignOut successful');
-          client = null;
-          callback();
-        }
-      });
-    } else {
-      callback();
-    }
-  }
-
-});
-
-/**
- * Service responsible for storing authentication state.
- */
-angular.module('app').factory('AuthenticationService', function(dbClientService) {
-
-  return {
-    isAuthenticated: function() {
-      return dbClientService.isAuthenticated();
-    },
-    signOut: function(callback) {
-      dbClientService.signOut(callback);
-    }
-  };
-
+// The tracker to edit.
+angular.module('app').value('TrackerToEdit', {
+  value: null
 });
