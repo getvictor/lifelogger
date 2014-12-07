@@ -12,10 +12,11 @@ angular.module('app').service('DBClientService', function() {
     return client.isAuthenticated();
   }
 
-  var openOrCreateDatastore = function(successCallback, errorCallback) {
+  var openOrCreateDatastore = function(datastoreId, successCallback, errorCallback) {
     if (openDatastores[datastoreId]) {
       successCallback(openDatastores[datastoreId]);
     } else {
+      var manager = client.getDatastoreManager();
       manager.openOrCreateDatastore(datastoreId, function(error, datastore) {
         if (error) {
           errorCallback({message: 'Could not open trackers datastore.'});
@@ -28,7 +29,6 @@ angular.module('app').service('DBClientService', function() {
   };
 
   this.saveTracker = function(tracker, successCallback, errorCallback) {
-    var manager = client.getDatastoreManager();
     var datastoreId = 'trackers';
     var writeRecord = function(datastore) {
       // TODO: Check for duplicate tracker name.
@@ -43,11 +43,11 @@ angular.module('app').service('DBClientService', function() {
         errorCallback(err);
       }
     };
-    openOrCreateDatastore(writeRecord, errorCallback);
+    openOrCreateDatastore(datastoreId, writeRecord, errorCallback);
   };
 
   this.listTrackers = function(successCallback, errorCallback) {
-    openOrCreateDatastore(function() {
+    openOrCreateDatastore('trackers', function(datastore) {
       try {
         var table = datastore.getTable('trackers');
         var records = table.query({valid: true});
@@ -55,6 +55,7 @@ angular.module('app').service('DBClientService', function() {
         for (var i = 0; i < records.length; i++) {
           trackers[i] = records[i].getFields();
         }
+        successCallback(trackers);
       } catch (err) {
         errorCallback(err);
       }

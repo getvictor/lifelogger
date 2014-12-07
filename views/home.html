@@ -1,1 +1,8 @@
-Dashboard Here
+<alert ng-repeat="alert in AlertsService.alerts" type="{{alert.type}}" close="AlertsService.clear($index)">{{alert.msg}}</alert>
+
+<h3>Trackers</h3>
+<ul>
+  <li ng-repeat="tracker in trackers">{{ tracker.name }}</li>
+</ul>
+
+<h3>Dashboard Here</h3>
