@@ -1,0 +1,59 @@
+<alert ng-repeat="alert in AlertService.alerts" type="{{alert.type}}" close="AlertService.clear($index)">{{alert.msg}}</alert>
+<div class="row">
+  <h3 class="text-center">Create an Account</h3>
+</div>
+<form class="form-horizontal" role="form" name="form" novalidate>
+  <div class="form-group" ng-class="{true: 'has-error'}[submitted && form.username.$invalid]">
+    <label for="inputUsername" class="col-sm-4 control-label">Username</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="inputUsername"
+        placeholder="Username" ng-model="username" name="username"
+        maxlength="100" required>
+      <p class="help-block" ng-show="submitted && form.username.$error.required">Required</p>
+    </div>
+  </div>
+  <div class="form-group" ng-class="{true: 'has-error'}[submitted && form.name.$invalid]">
+    <label for="inputName" class="col-sm-4 control-label">Name</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="inputName"
+        placeholder="First Last" ng-model="name" name="name"
+        maxlength="100" required>
+      <p class="help-block" ng-show="submitted && form.name.$error.required">Required</p>
+    </div>
+  </div>
+  <div class="form-group" ng-class="{true: 'has-error'}[submitted && form.email.$invalid]">
+    <label for="inputEmail" class="col-sm-4 control-label">Email</label>
+    <div class="col-sm-4">
+      <input type="email" class="form-control" id="inputEmail"
+        placeholder="Email" ng-model="email" name="email"
+        maxlength="100" required>
+      <p class="help-block" ng-show="submitted && form.email.$error.required">Required</p>
+      <p class="help-block" ng-show="submitted && form.email.$error.email">Invalid email</p>
+    </div>
+  </div>
+  <div class="form-group" ng-class="{true: 'has-error'}[submitted && form.password.$invalid]">
+    <label for="inputPassword" class="col-sm-4 control-label">Password</label>
+    <div class="col-sm-4">
+      <input type="password" class="form-control" id="inputPassword"
+        placeholder="Password" ng-model="password" name="password"
+        maxlength="100" required>
+      <p class="help-block" ng-show="submitted && form.password.$error.required">Required</p>
+    </div>
+  </div>
+  <div class="form-group" ng-class="{true: 'has-error'}[submitted && form.passwordConfirm.$invalid]">
+    <label for="inputPasswordConfirm" class="col-sm-4 control-label">Confirm Password</label>
+    <div class="col-sm-4">
+      <input type="password" class="form-control" id="inputPasswordConfirm"
+        placeholder="Confirm Password" ng-model="passwordConfirm" name="passwordConfirm"
+        ui-validate=" '$value==password' " ui-validate-watch=" 'password' ">
+      <p class="help-block" ng-show="submitted && form.passwordConfirm.$error.validator">Passwords must match</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-4 col-sm-10">
+      <button type="submit" class="btn btn-default"
+        ng-click="register()">Register</button>
+      or <a href="#/login"> Log In if you already have an account</a>
+    </div>
+  </div>
+</form>

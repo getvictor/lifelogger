@@ -1,15 +1,14 @@
 /**
  * Service responsible for storing authentication state.
  */
-angular.module('app').factory('AuthenticationService', function(DBClientService) {
+angular.module('app').service('AuthenticationService', function($window) {
 
-  return {
-    isAuthenticated: function() {
-      return DBClientService.isAuthenticated();
-    },
-    signOut: function(callback) {
-      DBClientService.signOut(callback);
-    }
+  this.isAuthenticated = function() {
+    return !!$window.localStorage.apigeeToken;
+  };
+
+  this.signOut = function() {
+    // TODO: Is this needed?
   };
 
 });

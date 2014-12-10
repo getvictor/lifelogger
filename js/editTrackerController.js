@@ -2,10 +2,10 @@
  * Controller for the add/edit tracker page.
  */
 angular.module('app').controller('EditTrackerController', function($scope, $location,
-    TrackerToEdit, DBClientService, AlertsService) {
+    TrackerToEdit, DBClientService, AlertService) {
 
-  $scope.AlertsService = AlertsService;
-  AlertsService.clearAll();
+  $scope.AlertService = AlertService;
+  AlertService.clearAll();
 
   if (TrackerToEdit.value) {
     $scope.edit = true;
@@ -14,7 +14,7 @@ angular.module('app').controller('EditTrackerController', function($scope, $loca
   }
 
   $scope.addTracker = function() {
-    AlertsService.clearAll();
+    AlertService.clearAll();
     $scope.submitted = true;
 
     if ($scope.form.$valid) {
@@ -30,14 +30,14 @@ angular.module('app').controller('EditTrackerController', function($scope, $loca
         $location.path('/');
         $scope.$apply();
       }, function(error) {
-        AlertsService.error(error);
+        AlertService.error(error);
       });
 
     }
   };
 
   $scope.editTracker = function() {
-    AlertsService.clearAll();
+    AlertService.clearAll();
     $scope.submitted = true;
 
     if ($scope.form.$valid) {

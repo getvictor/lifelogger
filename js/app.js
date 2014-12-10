@@ -2,7 +2,10 @@ angular.module('app', [ 'ngRoute', 'ui.bootstrap', 'ui.validate']);
 
 angular.module('app').constant('OPTS', {
   TIMEOUT: 30000,
-  DROPBOX_APP_KEY: 'maqecjch0jcdmev'
+  DROPBOX_APP_KEY: 'maqecjch0jcdmev',
+  APIGEE_ORG_NAME: 'victoreda',
+  APIGEE_APP_NAME: 'lifelogger',
+  USER_PROXY: 'https://victoreda-prod.apigee.net/lifelogger-user'
 });
 
 // Configure routes.
@@ -11,9 +14,16 @@ angular.module('app').config(function($routeProvider) {
   // Login user.
   when('/login', {
     templateUrl : 'views/login.html',
-    controller : 'LoginController',
+    controller : 'UserController',
     access : { requiredAuthentication: false },
     title : 'Login'
+  }).
+  // Register user.
+  when('/register', {
+    templateUrl : 'views/register.html',
+    controller : 'UserController',
+    access : { requiredAuthentication: false },
+    title : 'Create Account'
   }).
   // Show home page.
   when('/', {

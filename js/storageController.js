@@ -1,7 +1,7 @@
 /**
- * Controller for the login page.
+ * Controller for the storage page.
  */
-angular.module('app').controller('LoginController', function($scope, $location, $window,
+angular.module('app').controller('StorageController', function($scope, $location, $window,
     OPTS, DBClientService) {
 
   var client = new Dropbox.Client({key: OPTS.DROPBOX_APP_KEY});

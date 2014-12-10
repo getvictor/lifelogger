@@ -1,16 +1,16 @@
 /**
  * Controller for the home page.
  */
-angular.module('app').controller('HomeController', function($scope, AlertsService, DBClientService) {
+angular.module('app').controller('HomeController', function($scope, AlertService, DBClientService) {
 
-  $scope.AlertsService = AlertsService;
-  AlertsService.clearAll();
+  $scope.AlertService = AlertService;
+  AlertService.clearAll();
 
   DBClientService.listTrackers(function(trackers) {
     $scope.trackers = trackers;
     $scope.$apply();
   }, function(err) {
-    AlertsService.error(err);
+    AlertService.error(err);
     $scope.$apply();
   });
 
