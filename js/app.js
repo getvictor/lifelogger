@@ -29,8 +29,22 @@ angular.module('app').config(function($routeProvider) {
   when('/', {
     templateUrl : 'views/home.html',
     controller : 'HomeController',
+    access : { requiredAuthentication: true, requiredStorage: true },
+    title : 'Home'
+  }).
+  // Select data source.
+  when('/storage', {
+    templateUrl : 'views/storage.html',
+    controller : 'StorageController',
     access : { requiredAuthentication: true },
     title : 'Home'
+  }).
+  // Show test page.
+  when('/test', {
+    templateUrl : 'views/test.html',
+    controller : 'TestController',
+    access : { requiredAuthentication: true },
+    title : 'Test'
   }).
   // Add tracker.
   when('/addTracker', {
@@ -40,7 +54,7 @@ angular.module('app').config(function($routeProvider) {
   when('/editTracker', {
     templateUrl : 'views/editTracker.html',
     controller : 'EditTrackerController',
-    access : { requiredAuthentication: true },
+    access : { requiredAuthentication: true, requiredStorage: true },
     title : 'Edit Tracker'
   }).
   // Go to home page.
@@ -49,8 +63,15 @@ angular.module('app').config(function($routeProvider) {
   });
 });
 
-angular.module('app').run(function($rootScope, $location, $window, AuthenticationService) {
+angular.module('app').run(function($rootScope, $location, $window, AuthenticationService, ApigeeClient, UserDTO) {
   $rootScope.APP_TITLE = APP_TITLE;
+
+  // Load user if authenticated
+  if (AuthenticationService.isAuthenticated()) {
+    ApigeeClient.getUser(function() {}, function(error) {
+      alert("Could not load user. Please Logout and Login again.");
+    });
+  }
 
   $rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
     // Update page title.
@@ -67,6 +88,8 @@ angular.module('app').run(function($rootScope, $location, $window, Authenticatio
           // A logged in user should not be going back to register/login.
           (nextRoute.originalPath === '/register' || nextRoute.originalPath === '/login')) {
         $location.path("/");
+      } else if (isAuthenticated && nextRoute.access.requiredStorage && !UserDTO.hasStorage()) {
+        $location.path("/storage");
       }
     }
   });
@@ -74,10 +97,60 @@ angular.module('app').run(function($rootScope, $location, $window, Authenticatio
 
 // The user.
 angular.module('app').value('UserDTO', {
-  user: null
+  user: null,
+  hasStorage: function() {
+    return this.user && this.user.storage && this.user.storage.name;
+  }
 });
 
 // The tracker to edit.
 angular.module('app').value('TrackerToEdit', {
   value: null
+});
+
+angular.module('app').controller('TestController', function($scope, AlertService, UserDTO) {
+
+  $scope.AlertService = AlertService;
+  AlertService.clearAll();
+
+  $scope.submit = function register() {
+    // Clear alerts;
+    AlertService.clearAll();
+    $scope.submitted = true;
+
+    if ($scope.form.$valid) {
+
+      UserDTO.user.set($scope.name, $scope.value);
+      UserDTO.user.save(function(error, result) {
+        if (error) {
+          AlertService.error(error);
+        } else {
+          AlertService.info('User updated');
+        }
+      });
+
+    }
+  };
+
+  $scope.submitDataSource = function register() {
+    // Clear alerts;
+    AlertService.clearAll();
+    $scope.submitted = true;
+
+    if ($scope.form.$valid) {
+
+      var dataSource = UserDTO.user.get('dataSource');
+      dataSource.name = 'dropbox';
+      dataSource[$scope.name] = $scope.value;
+      UserDTO.user.save(function(error, result) {
+        if (error) {
+          AlertService.error(error);
+        } else {
+          AlertService.info('User updated');
+        }
+      });
+
+    }
+  };
+
 });

@@ -1,0 +1,28 @@
+<alert ng-repeat="alert in AlertService.alerts" type="{{alert.type}}" close="AlertService.clear($index)">{{alert.msg}}</alert>
+
+<form class="form-horizontal" role="form" name="form" novalidate>
+  <div class="form-group" ng-class="{true: 'has-error'}[submitted && form.name.$invalid]">
+    <label for="inputName" class="col-sm-4 control-label">Name</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="inputName"
+        placeholder="Name" ng-model="name" name="name" required>
+      <p class="help-block" ng-show="submitted && form.name.$error.required">Required</p>
+    </div>
+  </div>
+  <div class="form-group" ng-class="{true: 'has-error'}[submitted && form.value.$invalid]">
+    <label for="inputValue" class="col-sm-4 control-label">Value</label>
+    <div class="col-sm-4">
+      <input type="text" class="form-control" id="inputValue"
+        placeholder="Value" ng-model="value" name="value" required>
+      <p class="help-block" ng-show="submitted && form.value.$error.required">Required</p>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-4 col-sm-10">
+      <button type="submit" class="btn btn-default"
+        ng-click="submit()">Submit</button>
+      <button type="submit" class="btn btn-default"
+        ng-click="submitDataSource()">Data Source</button>
+    </div>
+  </div>
+</form>

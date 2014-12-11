@@ -7,6 +7,12 @@ angular.module('app').controller('UserController', function($scope, $location, $
   $scope.AlertService = AlertService;
   AlertService.clearAll();
 
+  var login = function(user) {
+    ApigeeClient.login(user, function() {
+      $location.path("/");
+    }, AlertService.error);
+  };
+
   $scope.login = function(username, password) {
     // Clear alerts.
     AlertService.clearAll();
@@ -19,9 +25,7 @@ angular.module('app').controller('UserController', function($scope, $location, $
         password: $scope.password
       };
 
-      ApigeeClient.login(user, function() {
-        $location.path("/");
-      }, AlertService.error);
+      login(user);
 
     }
 
@@ -40,7 +44,7 @@ angular.module('app').controller('UserController', function($scope, $location, $
           password: $scope.password
       };
       ApigeeClient.signup(user).success(function(data) {
-        alert('Now login.');
+        login(user);
       }).error(function(data, status) {
         if (data && data.error_description) {
           AlertService.error({message: data.error_description});

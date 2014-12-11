@@ -8,6 +8,13 @@ angular.module('app').factory('AlertService', function() {
   return {
     alerts: alerts,
 
+    info: function(message) {
+      alerts.push({
+        type: 'info',
+        msg: message
+      });
+    },
+
     error: function(data) {
       if (data.message) {
         alerts.push({

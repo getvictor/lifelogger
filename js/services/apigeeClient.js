@@ -12,28 +12,55 @@ angular.module('app').service('ApigeeClient', function($http, $log, $window, OPT
     return $http.post(OPTS.USER_PROXY + '/signup', user);
   };
 
-  this.login = function(user, successCallback, errorCallback) {
-    dataClient.login(user.username, user.password, function (error, response) {
+  this.getUser = function(successCallback, errorCallback) {
+    dataClient.getEntity({
+      type: 'user',
+      uuid: $window.localStorage.userUuid
+    }, function(error, result) {
       if (error) {
         errorCallback(error);
       } else {
-        // success — user has been logged in
-        UserDTO.user = response.user;
+        UserDTO.user = this;
         $window.localStorage.apigeeToken = dataClient.token;
         successCallback();
       }
     });
   };
 
-  this.logout = function(successCallback, errorCallback) {
-    dataClient.logoutAndDestroyToken(UserDTO.user.username, null, null, function(error, response) {
+  this.login = function(user, successCallback, errorCallback) {
+    var getUser = this.getUser;
+    dataClient.login(user.username, user.password, function (error, response) {
       if (error) {
         errorCallback(error);
       } else {
-        delete $window.localStorage.apigeeToken;
-        successCallback();
+        // success — user has been logged in
+        $window.localStorage.userUuid = response.user.uuid;
+        getUser(function() {
+          $window.localStorage.apigeeToken = dataClient.token;
+          successCallback();
+        }, function(error) {
+          errorCallback(error);
+        });
       }
     });
+  };
+
+  this.logout = function(successCallback, errorCallback) {
+    var callback = function() {
+      delete $window.localStorage.apigeeToken;
+      successCallback();
+    };
+    if (UserDTO.user) {
+      dataClient.logoutAndDestroyToken(UserDTO.user.get('username'), null, null, function(error, response) {
+        if (error) {
+          errorCallback(error);
+        } else {
+          callback();
+        }
+      });
+    } else {
+      callback();
+    }
   };
 
 });
