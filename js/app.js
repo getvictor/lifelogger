@@ -72,6 +72,11 @@ angular.module('app').run(function($rootScope, $location, $window, Authenticatio
   });
 });
 
+// The user.
+angular.module('app').value('UserDTO', {
+  user: null
+});
+
 // The tracker to edit.
 angular.module('app').value('TrackerToEdit', {
   value: null

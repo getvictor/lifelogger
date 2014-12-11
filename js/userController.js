@@ -14,12 +14,15 @@ angular.module('app').controller('UserController', function($scope, $location, $
 
     if ($scope.form.$valid) {
 
-      UserService.login(username, password).success(function(data) {
-        AuthenticationService.setToken(data.token);
+      var user = {
+        username: $scope.username,
+        password: $scope.password
+      };
+
+      ApigeeClient.login(user, function() {
         $location.path("/");
-      }).error(function(data, status) {
-        AlertService.error(data);
-      });
+      }, AlertService.error);
+
     }
 
   };

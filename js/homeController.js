@@ -6,6 +6,7 @@ angular.module('app').controller('HomeController', function($scope, AlertService
   $scope.AlertService = AlertService;
   AlertService.clearAll();
 
+  /*
   DBClientService.listTrackers(function(trackers) {
     $scope.trackers = trackers;
     $scope.$apply();
@@ -13,5 +14,6 @@ angular.module('app').controller('HomeController', function($scope, AlertService
     AlertService.error(err);
     $scope.$apply();
   });
+  */
 
 });
