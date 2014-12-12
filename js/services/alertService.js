@@ -1,7 +1,7 @@
 /**
  * Service for handling pop-up ui.bootstrap alerts.
  */
-angular.module('app').factory('AlertService', function() {
+angular.module('app').factory('AlertService', function($rootScope) {
 
   var alerts = [];
 

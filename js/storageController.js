@@ -2,7 +2,7 @@
  * Controller for the storage page.
  */
 angular.module('app').controller('StorageController', function($scope, $location, $window,
-    OPTS, DBClientService) {
+    AlertService, OPTS, DBClientService, UserDTO) {
 
   var client = new Dropbox.Client({key: OPTS.DROPBOX_APP_KEY});
   client.authDriver(new Dropbox.AuthDriver.Popup({
@@ -15,18 +15,31 @@ angular.module('app').controller('StorageController', function($scope, $location
       console.log(error);
     }
     if (client.isAuthenticated()) {
-      DBClientService.setDropboxClient(client);
+      var credentials = client.credentials();
+
+      var storage = UserDTO.user.get('storage');
+      if (!storage) {
+        storage = {};
+        UserDTO.user.set('storage', storage);
+      }
+      storage.name = 'dropbox';
+      storage.credentials = credentials;
+      UserDTO.user.save(function(error, result) {
+        if (error) {
+          AlertService.error(error);
+        }
+      });
+
       $location.path('/');
       // Update AngularJS if needed.
-      var phase = $scope.$root.$$phase;
-      if (phase != '$apply' && phase != '$digest') {
+      if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
         $scope.$apply();
       }
     }
   };
 
   // Try to finish OAuth authorization.
-  client.authenticate({interactive: false}, updateDropboxAuthenticationStatus);
+  // client.authenticate({interactive: false}, updateDropboxAuthenticationStatus);
 
   $scope.loginDropbox = function() {
     client.authenticate({interactive: true}, updateDropboxAuthenticationStatus);

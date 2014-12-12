@@ -1,5 +1,3 @@
-<alert ng-repeat="alert in AlertService.alerts" type="{{alert.type}}" close="AlertService.clear($index)">{{alert.msg}}</alert>
-
 <form class="form-horizontal" role="form" name="form" novalidate>
   <div class="form-group" ng-class="{true: 'has-error'}[submitted && form.name.$invalid]">
     <label for="inputName" class="col-sm-4 control-label">Name</label>

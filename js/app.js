@@ -99,7 +99,11 @@ angular.module('app').run(function($rootScope, $location, $window, Authenticatio
 angular.module('app').value('UserDTO', {
   user: null,
   hasStorage: function() {
-    return this.user && this.user.storage && this.user.storage.name;
+    if (this.user) {
+      var storage = this.user.get('storage');
+      return storage && storage.name;
+    }
+    return false;
   }
 });
 

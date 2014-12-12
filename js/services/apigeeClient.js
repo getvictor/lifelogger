@@ -47,7 +47,7 @@ angular.module('app').service('ApigeeClient', function($http, $log, $window, OPT
 
   this.logout = function(successCallback, errorCallback) {
     var callback = function() {
-      delete $window.localStorage.apigeeToken;
+      $window.localStorage.clear();
       successCallback();
     };
     if (UserDTO.user) {
