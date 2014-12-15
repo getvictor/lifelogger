@@ -4,7 +4,8 @@ angular.module('app').constant('OPTS', {
   TIMEOUT: 30000,
   APIGEE_ORG_NAME: 'victoreda',
   APIGEE_APP_NAME: 'lifelogger',
-  USER_PROXY: 'https://victoreda-prod.apigee.net/lifelogger-user'
+  USER_PROXY: 'https://victoreda-prod.apigee.net/lifelogger-user',
+  MOVES_CLIENT_ID: 'BGg13T3W7nHi69oD8M2X2o7S0OzHP7V3'
 });
 
 // Configure routes.
@@ -45,6 +46,13 @@ angular.module('app').config(function($routeProvider) {
     access : { requiredAuthentication: true },
     title : 'Test'
   }).
+  // Add data source
+  when('/addDataSource', {
+    templateUrl : 'views/addDataSource.html',
+    controller : 'AddDataSourceController',
+    access : { requiredAuthentication: true, requiredStorage: true },
+    title : 'Add Data Source'
+  }).
   // Add tracker.
   when('/addTracker', {
     redirectTo : '/editTracker'
@@ -55,6 +63,9 @@ angular.module('app').config(function($routeProvider) {
     controller : 'EditTrackerController',
     access : { requiredAuthentication: true, requiredStorage: true },
     title : 'Edit Tracker'
+  }).
+  when('/movesRedirectUri', {
+    access : { redirect: true, redirectType: 'moves', redirectTo: '/' }
   }).
   // Go to home page.
   otherwise({
@@ -69,7 +80,7 @@ angular.element(document).ready(function() {
 
 });
 
-angular.module('app').run(function($rootScope, $location, $window, AlertService, AuthenticationService, ApigeeClient, DropboxService, UserDTO) {
+angular.module('app').run(function($location, $rootScope, $routeParams, $window, AlertService, AuthenticationService, ApigeeClient, DropboxService, UserDTO) {
   $rootScope.APP_TITLE = APP_TITLE;
 
   var loading = false;
@@ -78,6 +89,9 @@ angular.module('app').run(function($rootScope, $location, $window, AlertService,
   if (AuthenticationService.isAuthenticated()) {
     loading = true;
     var currentLocation = $location.path();
+    if (currentLocation.indexOf('Redirect') > -1) {
+      currentLocation = '/';
+    }
     ApigeeClient.getUser(function() {
       // Load storage credentials
       if (UserDTO.hasStorage()) {
@@ -88,17 +102,21 @@ angular.module('app').run(function($rootScope, $location, $window, AlertService,
           break;
         }
         loading = false;
-        $location.path(currentLocation);
-        if ($rootScope.$root.$$phase != '$apply' && $rootScope.$root.$$phase != '$digest') {
-          $rootScope.$apply();
+        $rootScope.$emit('userUpdated');
+        // Don't reload if the location did not change or location was a redirect (which is handled below)
+        if ($location.path() === currentLocation) {
+          $('#loadingCover').hide();
+        } else {
+          $location.path(currentLocation);
+          if ($rootScope.$root.$$phase != '$apply' && $rootScope.$root.$$phase != '$digest') {
+            $rootScope.$apply();
+          }
         }
       }
     }, function(error) {
       alert("Could not load user. Please Logout and Login again.");
       $('#loadingCover').hide();
     });
-  } else {
-    $('#loadingCover').hide();
   }
 
   $rootScope.$on('$viewContentLoaded', function() {
@@ -115,15 +133,41 @@ angular.module('app').run(function($rootScope, $location, $window, AlertService,
     if (nextRoute && nextRoute.access) {
       console.log((currentRoute ? currentRoute.originalPath : 'null') + ' -> ' + nextRoute.originalPath);
 
-      var isAuthenticated = AuthenticationService.isAuthenticated();
-      if (nextRoute.access.requiredAuthentication && !isAuthenticated) {
-        $location.path("/login");
-      } else if (isAuthenticated &&
-          // A logged in user should not be going back to register/login.
-          (nextRoute.originalPath === '/register' || nextRoute.originalPath === '/login')) {
-        $location.path("/");
-      } else if (isAuthenticated && nextRoute.access.requiredStorage && !UserDTO.hasStorage()) {
-        $location.path("/storage");
+      if (nextRoute.access.redirect) {
+        switch(nextRoute.access.redirectType) {
+        case 'moves':
+          var movesCode = $location.$$search.code;
+          var addMoves = function() {
+            DropboxService.saveDataSource({
+              name: 'moves',
+              valid: true,
+              code: movesCode
+            }, function() {
+              // TODO: What to do on success
+            }, function(error) {
+              alert('Could not connect to Moves.');
+            });
+          };
+          if (UserDTO.user) {
+            addMoves();
+          } else {
+            $rootScope.$on('userUpdated', addMoves);
+          }
+          break;
+        }
+        $location.path(nextRoute.access.redirectTo);
+        $location.url($location.path());
+      } else {
+        var isAuthenticated = AuthenticationService.isAuthenticated();
+        if (nextRoute.access.requiredAuthentication && !isAuthenticated) {
+          $location.path("/login");
+        } else if (isAuthenticated &&
+            // A logged in user should not be going back to register/login.
+            (nextRoute.originalPath === '/register' || nextRoute.originalPath === '/login')) {
+          $location.path("/");
+        } else if (isAuthenticated && nextRoute.access.requiredStorage && !UserDTO.hasStorage()) {
+          $location.path("/storage");
+        }
       }
     }
   });
@@ -146,12 +190,12 @@ angular.module('app').value('TrackerToEdit', {
   value: null
 });
 
-angular.module('app').controller('TestController', function($scope, AlertService, UserDTO) {
+angular.module('app').controller('TestController', function($location, $scope, AlertService, DropboxService, UserDTO) {
 
   $scope.AlertService = AlertService;
   AlertService.clearAll();
 
-  $scope.submit = function register() {
+  $scope.submit = function () {
     // Clear alerts;
     AlertService.clearAll();
     $scope.submitted = true;
@@ -170,7 +214,7 @@ angular.module('app').controller('TestController', function($scope, AlertService
     }
   };
 
-  $scope.submitDataSource = function register() {
+  $scope.submitDataSource = function () {
     // Clear alerts;
     AlertService.clearAll();
     $scope.submitted = true;
@@ -186,6 +230,25 @@ angular.module('app').controller('TestController', function($scope, AlertService
         } else {
           AlertService.info('User updated');
         }
+      });
+
+    }
+  };
+
+  $scope.deleteDataSource = function () {
+    // Clear alerts;
+    AlertService.clearAll();
+    $scope.submitted = true;
+
+    if ($scope.form.$valid) {
+
+      DropboxService.deleteDataSource($scope.recordId, function() {
+        $location.path('/');
+        if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
+          $rootScope.$apply();
+        }
+      }, function(error) {
+        AlertService.error(error);
       });
 
     }

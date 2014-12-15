@@ -94,4 +94,39 @@ angular.module('dropbox').service('DropboxService', function($window, DROPBOX_OP
     openOrCreateDatastore(datastoreId, writeRecord, errorCallback);
   };
 
+  this.saveDataSource = function(dataSource, successCallback, errorCallback) {
+    var datastoreId = 'data_sources';
+    var writeRecord = function(datastore) {
+      try {
+        var table = datastore.getTable('data_sources');
+        // Check if record already exists
+        var records = table.query({name: dataSource.name});
+        if (records.length) {
+          records[0].update(dataSource);
+        } else {
+          table.insert(dataSource);
+        }
+        successCallback();
+      } catch (error) {
+        errorCallback(error);
+      }
+    };
+    openOrCreateDatastore(datastoreId, writeRecord, errorCallback);
+  };
+
+  this.deleteDataSource = function(recordId, successCallback, errorCallback) {
+    var datastoreId = 'data_sources';
+    var writeRecord = function(datastore) {
+      try {
+        var table = datastore.getTable('data_sources');
+        var record = table.get(recordId);
+        record.deleteRecord();
+        successCallback();
+      } catch (error) {
+        errorCallback(error);
+      }
+    };
+    openOrCreateDatastore(datastoreId, writeRecord, errorCallback);
+  };
+
 });
