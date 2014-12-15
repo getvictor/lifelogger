@@ -2,9 +2,8 @@
  * Controller for the add/edit tracker page.
  */
 angular.module('app').controller('EditTrackerController', function($scope, $location,
-    TrackerToEdit, DBClientService, AlertService) {
+    TrackerToEdit, DropboxService, AlertService) {
 
-  $scope.AlertService = AlertService;
   AlertService.clearAll();
 
   if (TrackerToEdit.value) {
@@ -23,12 +22,14 @@ angular.module('app').controller('EditTrackerController', function($scope, $loca
       var tracker = {
           name: $scope.name
       };
-      DBClientService.saveTracker({
+      DropboxService.saveTracker({
         name: encodeURIComponent($scope.name)
       }, function() {
         // Go back to home page.
         $location.path('/');
-        $scope.$apply();
+        if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
+          $scope.$apply();
+        }
       }, function(error) {
         AlertService.error(error);
       });

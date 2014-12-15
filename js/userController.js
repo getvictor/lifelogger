@@ -2,13 +2,21 @@
  * Controller for Login and Register views.
  */
 angular.module('app').controller('UserController', function($scope, $location, $log,
-    AuthenticationService, AlertService, ApigeeClient) {
+    AuthenticationService, AlertService, ApigeeClient, DropboxService, UserDTO) {
 
-  $scope.AlertService = AlertService;
   AlertService.clearAll();
 
   var login = function(user) {
     ApigeeClient.login(user, function() {
+      // Load storage credentials
+      if (UserDTO.hasStorage()) {
+        var storage = UserDTO.user.get('storage');
+        switch (storage.name) {
+        case 'dropbox':
+          DropboxService.setClient(storage.credentials);
+          break;
+        }
+      }
       $location.path("/");
     }, AlertService.error);
   };

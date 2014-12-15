@@ -2,7 +2,10 @@ angular.module('app').service('ApigeeClient', function($http, $log, $window, OPT
 
   var clientCreds = {
       orgName: OPTS.APIGEE_ORG_NAME,
-      appName: OPTS.APIGEE_APP_NAME
+      appName: OPTS.APIGEE_APP_NAME,
+      disableAnalytics: true,
+      networkMonitoringEnabled: false,
+      enableLogMonitoring: false
   };
   var dataClient = new Apigee.Client(clientCreds);
 
@@ -47,6 +50,7 @@ angular.module('app').service('ApigeeClient', function($http, $log, $window, OPT
 
   this.logout = function(successCallback, errorCallback) {
     var callback = function() {
+      // Delete everything!
       $window.localStorage.clear();
       successCallback();
     };

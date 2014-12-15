@@ -1,8 +1,7 @@
-angular.module('app', [ 'ngRoute', 'ui.bootstrap', 'ui.validate']);
+angular.module('app', [ 'ngRoute', 'ui.bootstrap', 'ui.validate', 'dropbox']);
 
 angular.module('app').constant('OPTS', {
   TIMEOUT: 30000,
-  DROPBOX_APP_KEY: 'maqecjch0jcdmev',
   APIGEE_ORG_NAME: 'victoreda',
   APIGEE_APP_NAME: 'lifelogger',
   USER_PROXY: 'https://victoreda-prod.apigee.net/lifelogger-user'
@@ -63,15 +62,50 @@ angular.module('app').config(function($routeProvider) {
   });
 });
 
-angular.module('app').run(function($rootScope, $location, $window, AuthenticationService, ApigeeClient, UserDTO) {
+angular.element(document).ready(function() {
+  var startApp = function() {
+    angular.bootstrap(document, ["app"]);
+  };
+
+});
+
+angular.module('app').run(function($rootScope, $location, $window, AlertService, AuthenticationService, ApigeeClient, DropboxService, UserDTO) {
   $rootScope.APP_TITLE = APP_TITLE;
+
+  var loading = false;
 
   // Load user if authenticated
   if (AuthenticationService.isAuthenticated()) {
-    ApigeeClient.getUser(function() {}, function(error) {
+    loading = true;
+    var currentLocation = $location.path();
+    ApigeeClient.getUser(function() {
+      // Load storage credentials
+      if (UserDTO.hasStorage()) {
+        var storage = UserDTO.user.get('storage');
+        switch (storage.name) {
+        case 'dropbox':
+          DropboxService.setClient(storage.credentials);
+          break;
+        }
+        loading = false;
+        $location.path(currentLocation);
+        if ($rootScope.$root.$$phase != '$apply' && $rootScope.$root.$$phase != '$digest') {
+          $rootScope.$apply();
+        }
+      }
+    }, function(error) {
       alert("Could not load user. Please Logout and Login again.");
+      $('#loadingCover').hide();
     });
+  } else {
+    $('#loadingCover').hide();
   }
+
+  $rootScope.$on('$viewContentLoaded', function() {
+    if (!loading) {
+      $('#loadingCover').hide();
+    }
+  });
 
   $rootScope.$on("$routeChangeStart", function(event, nextRoute, currentRoute) {
     // Update page title.

@@ -1,19 +1,18 @@
 /**
  * Controller for the home page.
  */
-angular.module('app').controller('HomeController', function($scope, AlertService, DBClientService) {
+angular.module('app').controller('HomeController', function($scope, AlertService, DropboxService) {
 
-  $scope.AlertService = AlertService;
   AlertService.clearAll();
 
-  /*
-  DBClientService.listTrackers(function(trackers) {
-    $scope.trackers = trackers;
-    $scope.$apply();
-  }, function(err) {
-    AlertService.error(err);
+  DropboxService.getDataSources(function(dataSources) {
+    $scope.dataSources = dataSources;
+    if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
+      $scope.$apply();
+    }
+  }, function(error) {
+    AlertService.error(error);
     $scope.$apply();
   });
-  */
 
 });
