@@ -2,7 +2,7 @@
  * Controller for the storage page.
  */
 angular.module('app').controller('StorageController', function($scope, $location, $window,
-    AlertService, OPTS, DropboxService, UserDTO) {
+    AlertService, OPTS, DropboxService, UserDTO, Utils) {
 
   AlertService.clearAll();
 
@@ -20,11 +20,7 @@ angular.module('app').controller('StorageController', function($scope, $location
         if (error) {
           AlertService.error(error);
         } else {
-          $location.path('/');
-          // Update AngularJS if needed.
-          if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
-            $scope.$apply();
-          }
+          Utils.path('/', $scope);
         }
       });
     }, function(error) {

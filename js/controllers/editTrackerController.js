@@ -2,7 +2,7 @@
  * Controller for the add/edit tracker page.
  */
 angular.module('app').controller('EditTrackerController', function($scope, $location,
-    TrackerToEdit, DropboxService, AlertService) {
+    TrackerToEdit, DropboxService, AlertService, Utils) {
 
   AlertService.clearAll();
 
@@ -27,9 +27,7 @@ angular.module('app').controller('EditTrackerController', function($scope, $loca
       }, function() {
         // Go back to home page.
         $location.path('/');
-        if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
-          $scope.$apply();
-        }
+        Utils.apply($scope);
       }, function(error) {
         AlertService.error(error);
       });

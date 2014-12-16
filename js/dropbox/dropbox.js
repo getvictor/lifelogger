@@ -133,4 +133,17 @@ angular.module('dropbox').service('DropboxService', function($window, DROPBOX_OP
     openOrCreateDatastore(datastoreId, writeRecord, errorCallback);
   };
 
+  this.getData = function(datastoreId, tableName, successCallback, errorCallback) {
+    var getRecords = function(datastore) {
+      try {
+        var table = datastore.getTable(tableName);
+        var records = table.query();
+        successCallback(records);
+      } catch (error) {
+        errorCallback(error);
+      }
+    }
+    openOrCreateDatastore(datastoreId, getRecords, errorCallback);
+  };
+
 });

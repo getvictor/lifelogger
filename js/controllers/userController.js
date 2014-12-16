@@ -2,7 +2,7 @@
  * Controller for Login and Register views.
  */
 angular.module('app').controller('UserController', function($scope, $location, $log,
-    AuthenticationService, AlertService, ApigeeClient, DropboxService, UserDTO) {
+    AuthenticationService, AlertService, ApigeeClient, DropboxService, UserDTO, Utils) {
 
   AlertService.clearAll();
 
@@ -17,10 +17,7 @@ angular.module('app').controller('UserController', function($scope, $location, $
           break;
         }
       }
-      $location.path("/");
-      if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
-        $scope.$apply();
-      }
+      Utils.path('/', $scope);
     }, AlertService.error);
   };
 

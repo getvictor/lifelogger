@@ -67,7 +67,10 @@ angular.module('app').config(function($routeProvider) {
     title : 'Edit Tracker'
   }).
   when('/movesRedirectUri', {
-    access : { redirect: true, redirectType: 'moves', redirectTo: '/' }
+    templateUrl: 'views/movesRedirectUri.html',
+    controller: 'MovesRedirectUriController',
+    access : { requiredAuthentication: true, requiredStorage: true },
+    title : 'Load Moves Data'
   }).
   // Go to home page.
   otherwise({
@@ -83,7 +86,7 @@ angular.element(document).ready(function() {
 });
 
 angular.module('app').run(function($http, $location, $rootScope, $routeParams, $window,
-    AlertService, AuthenticationService, ApigeeClient, DropboxService, OPTS, UserDTO) {
+    AlertService, AuthenticationService, ApigeeClient, DropboxService, OPTS, UserDTO, Utils) {
   $rootScope.APP_TITLE = APP_TITLE;
 
   var loading = false;
@@ -92,9 +95,6 @@ angular.module('app').run(function($http, $location, $rootScope, $routeParams, $
   if (AuthenticationService.isAuthenticated()) {
     loading = true;
     var currentLocation = $location.path();
-    if (currentLocation.indexOf('Redirect') > -1) {
-      currentLocation = '/';
-    }
     ApigeeClient.getUser(function() {
       // Load storage credentials
       if (UserDTO.hasStorage()) {
@@ -106,14 +106,11 @@ angular.module('app').run(function($http, $location, $rootScope, $routeParams, $
         }
         loading = false;
         $rootScope.$emit('userUpdated');
-        // Don't reload if the location did not change or location was a redirect (which is handled below)
+        // Don't reload if the location did not change
         if ($location.path() === currentLocation) {
           $('#loadingCover').hide();
         } else {
-          $location.path(currentLocation);
-          if ($rootScope.$root.$$phase != '$apply' && $rootScope.$root.$$phase != '$digest') {
-            $rootScope.$apply();
-          }
+          Utils.path(currentLocation, $rootScope);
         }
       }
     }, function(error) {
@@ -136,48 +133,15 @@ angular.module('app').run(function($http, $location, $rootScope, $routeParams, $
     if (nextRoute && nextRoute.access) {
       console.log((currentRoute ? currentRoute.originalPath : 'null') + ' -> ' + nextRoute.originalPath);
 
-      if (nextRoute.access.redirect) {
-        switch(nextRoute.access.redirectType) {
-        case 'moves':
-          var movesCode = $location.$$search.code;
-          var token;
-          var addMoves = function() {
-            token.name = 'moves';
-            token.valid = true;
-            DropboxService.saveDataSource(token, function() {
-              // TODO: What to do on success
-            }, function(error) {
-              alert('Could not connect to Moves.');
-            });
-          };
-          $http.post(OPTS.BACKEND_NORMALIZE + '/moves/getToken', {
-            code: movesCode,
-            redirectUri: OPTS.MOVES_REDIRECT_URI
-          }).success(function(data) {
-            token = data;
-            if (UserDTO.user) {
-              addMoves();
-            } else {
-              $rootScope.$on('userUpdated', addMoves);
-            }
-          }).error(function(data, status) {
-            alert('Could not connect to Moves.');
-          });
-          break;
-        }
-        $location.path(nextRoute.access.redirectTo);
-        $location.url($location.path());
-      } else {
-        var isAuthenticated = AuthenticationService.isAuthenticated();
-        if (nextRoute.access.requiredAuthentication && !isAuthenticated) {
-          $location.path("/login");
-        } else if (isAuthenticated &&
-            // A logged in user should not be going back to register/login.
-            (nextRoute.originalPath === '/register' || nextRoute.originalPath === '/login')) {
-          $location.path("/");
-        } else if (isAuthenticated && nextRoute.access.requiredStorage && !UserDTO.hasStorage()) {
-          $location.path("/storage");
-        }
+      var isAuthenticated = AuthenticationService.isAuthenticated();
+      if (nextRoute.access.requiredAuthentication && !isAuthenticated) {
+        $location.path("/login");
+      } else if (isAuthenticated &&
+          // A logged in user should not be going back to register/login.
+          (nextRoute.originalPath === '/register' || nextRoute.originalPath === '/login')) {
+        $location.path("/");
+      } else if (isAuthenticated && nextRoute.access.requiredStorage && !UserDTO.hasStorage()) {
+        $location.path("/storage");
       }
     }
   });
@@ -200,7 +164,7 @@ angular.module('app').value('TrackerToEdit', {
   value: null
 });
 
-angular.module('app').controller('TestController', function($location, $scope, AlertService, DropboxService, UserDTO) {
+angular.module('app').controller('TestController', function($location, $scope, AlertService, DropboxService, UserDTO, Utils) {
 
   $scope.AlertService = AlertService;
   AlertService.clearAll();
@@ -253,10 +217,7 @@ angular.module('app').controller('TestController', function($location, $scope, A
     if ($scope.form.$valid) {
 
       DropboxService.deleteDataSource($scope.recordId, function() {
-        $location.path('/');
-        if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
-          $rootScope.$apply();
-        }
+        Utils.path('/', $scope);
       }, function(error) {
         AlertService.error(error);
       });
