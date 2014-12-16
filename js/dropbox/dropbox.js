@@ -55,6 +55,10 @@ angular.module('dropbox').service('DropboxService', function($window, DROPBOX_OP
     client.authenticate({interactive: true}, updateDropboxAuthenticationStatus);
   };
 
+  this.logout = function() {
+    if (client) client.reset();
+  };
+
   this.getCredentials = function() { return client.credentials(); }
 
   this.getDataSources = function(successCallback, errorCallback) {

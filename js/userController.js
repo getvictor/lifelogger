@@ -18,6 +18,9 @@ angular.module('app').controller('UserController', function($scope, $location, $
         }
       }
       $location.path("/");
+      if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
+        $scope.$apply();
+      }
     }, AlertService.error);
   };
 

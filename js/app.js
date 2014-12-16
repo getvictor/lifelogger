@@ -5,7 +5,9 @@ angular.module('app').constant('OPTS', {
   APIGEE_ORG_NAME: 'victoreda',
   APIGEE_APP_NAME: 'lifelogger',
   USER_PROXY: 'https://victoreda-prod.apigee.net/lifelogger-user',
-  MOVES_CLIENT_ID: 'BGg13T3W7nHi69oD8M2X2o7S0OzHP7V3'
+  MOVES_CLIENT_ID: 'BGg13T3W7nHi69oD8M2X2o7S0OzHP7V3',
+  MOVES_REDIRECT_URI: window.location.origin + window.location.pathname + '#/movesRedirectUri',
+  BACKEND_NORMALIZE: 'https://victoreda-prod.apigee.net/lifelogger-normalize'
 });
 
 // Configure routes.
@@ -80,7 +82,8 @@ angular.element(document).ready(function() {
 
 });
 
-angular.module('app').run(function($location, $rootScope, $routeParams, $window, AlertService, AuthenticationService, ApigeeClient, DropboxService, UserDTO) {
+angular.module('app').run(function($http, $location, $rootScope, $routeParams, $window,
+    AlertService, AuthenticationService, ApigeeClient, DropboxService, OPTS, UserDTO) {
   $rootScope.APP_TITLE = APP_TITLE;
 
   var loading = false;
@@ -137,22 +140,29 @@ angular.module('app').run(function($location, $rootScope, $routeParams, $window,
         switch(nextRoute.access.redirectType) {
         case 'moves':
           var movesCode = $location.$$search.code;
+          var token;
           var addMoves = function() {
-            DropboxService.saveDataSource({
-              name: 'moves',
-              valid: true,
-              code: movesCode
-            }, function() {
+            token.name = 'moves';
+            token.valid = true;
+            DropboxService.saveDataSource(token, function() {
               // TODO: What to do on success
             }, function(error) {
               alert('Could not connect to Moves.');
             });
           };
-          if (UserDTO.user) {
-            addMoves();
-          } else {
-            $rootScope.$on('userUpdated', addMoves);
-          }
+          $http.post(OPTS.BACKEND_NORMALIZE + '/moves/getToken', {
+            code: movesCode,
+            redirectUri: OPTS.MOVES_REDIRECT_URI
+          }).success(function(data) {
+            token = data;
+            if (UserDTO.user) {
+              addMoves();
+            } else {
+              $rootScope.$on('userUpdated', addMoves);
+            }
+          }).error(function(data, status) {
+            alert('Could not connect to Moves.');
+          });
           break;
         }
         $location.path(nextRoute.access.redirectTo);

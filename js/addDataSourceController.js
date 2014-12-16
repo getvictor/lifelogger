@@ -6,6 +6,6 @@ angular.module('app').controller('AddDataSourceController', function($scope, $wi
   AlertService.clearAll();
 
   $scope.movesClientId = OPTS.MOVES_CLIENT_ID;
-  $scope.movesRedirectUri = $window.location.origin + $window.location.pathname + '#/movesRedirectUri';
+  $scope.movesRedirectUri = OPTS.MOVES_REDIRECT_URI;
 
 });

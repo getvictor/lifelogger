@@ -2,7 +2,7 @@
  * Controller for the navigation bar.
  */
 angular.module('app').controller('NavbarController', function($scope, $location,
-    AuthenticationService, ApigeeClient) {
+    AuthenticationService, ApigeeClient, DropboxService) {
 
   $scope.isAuthenticated = function() {
     return AuthenticationService.isAuthenticated();
@@ -13,8 +13,12 @@ angular.module('app').controller('NavbarController', function($scope, $location,
   };
 
   $scope.logout = function() {
+    DropboxService.logout();
     ApigeeClient.logout(function() {
       $location.path('/login');
+      if ($scope.$root.$$phase != '$apply' && $scope.$root.$$phase != '$digest') {
+        $scope.$apply();
+      }
     }, function(error) {
       alert("Could not Logout");
     });
