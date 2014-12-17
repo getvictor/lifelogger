@@ -21,3 +21,11 @@ body {
     padding-top: 200px;
     color: #fff;
 }
+
+.vis.timeline .place {
+    background-color: aliceblue
+}
+
+.vis.timeline .move {
+    background-color: palegreen
+}
